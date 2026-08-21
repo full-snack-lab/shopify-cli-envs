@@ -1,0 +1,73 @@
+name: CLI compat
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  compat:
+    name: "@shopify/cli@${{ matrix.cli_version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cli_version: ["4.6.1", "latest"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install package deps
+        run: bun install --frozen-lockfile
+
+      - name: Unit tests
+        run: bun test
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Build plugin
+        run: bun run build
+
+      - name: Install Shopify CLI
+        run: npm install -g "@shopify/cli@${{ matrix.cli_version }}"
+
+      - name: Disable CLI auto-upgrade
+        run: shopify config autoupgrade off
+
+      - name: Show CLI version
+        run: shopify version
+
+      - name: Link plugin into CLI
+        run: shopify plugins link . --no-install
+
+      - name: Assert envs topic loads
+        run: |
+          out=$(shopify envs --help 2>&1)
+          for cmd in status use push deploy doctor; do
+            if ! grep -q "$cmd" <<<"$out"; then
+              echo "shopify envs --help does not list $cmd" >&2
+              echo "$out" >&2
+              exit 1
+            fi
+          done
+          echo "envs topic present"
+
+      - name: Assert app config use seam exists
+        run: shopify app config use --help
+
+      - name: Assert guard behavior on fixture
+        run: bash ci/assert-guard.sh
