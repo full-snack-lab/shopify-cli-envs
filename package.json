@@ -1,6 +1,6 @@
 {
   "name": "@full-snack-lab/shopify-cli-envs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shopify CLI plugin that manages app environments (dev/staging/production) from one committed manifest: config switching, Dokploy env push and deploy, drift detection, and a guard that stops `app dev` from touching protected environments.",
   "keywords": [
     "shopify",

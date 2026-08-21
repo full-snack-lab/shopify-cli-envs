@@ -26,6 +26,7 @@ __export(init_exports, {
 });
 module.exports = __toCommonJS(init_exports);
 var import_node_fs2 = require("node:fs");
+var import_node_os = require("node:os");
 var import_node_path2 = require("node:path");
 
 // src/lib/manifest.ts
@@ -772,6 +773,18 @@ function configClientId(root, configFile) {
 }
 
 // src/hooks/init.ts
+function cachedConfigFile(root) {
+  const base = process.env.XDG_CONFIG_HOME ?? (0, import_node_path2.join)((0, import_node_os.homedir)(), ".config");
+  const cachePath = (0, import_node_path2.join)(base, "shopify-cli-app-nodejs", "config.json");
+  if (!(0, import_node_fs2.existsSync)(cachePath)) return void 0;
+  try {
+    const cache = JSON.parse((0, import_node_fs2.readFileSync)(cachePath, "utf8"));
+    const entry = cache[root];
+    return typeof entry?.configFile === "string" ? entry.configFile : void 0;
+  } catch {
+    return void 0;
+  }
+}
 function activeConfigFile(root, argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -784,6 +797,8 @@ function activeConfigFile(root, argv) {
       return value.endsWith(".toml") ? value : `shopify.app.${value}.toml`;
     }
   }
+  const cached = cachedConfigFile(root);
+  if (cached !== void 0) return cached;
   const statePath = (0, import_node_path2.join)(root, ".shopify", "project.json");
   if ((0, import_node_fs2.existsSync)(statePath)) {
     try {

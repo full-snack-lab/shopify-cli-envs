@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { configClientId, hasManifest, loadManifest } from "../lib/manifest";
@@ -6,6 +7,19 @@ import { configClientId, hasManifest, loadManifest } from "../lib/manifest";
 interface InitOptions {
   id?: string;
   argv?: string[];
+}
+
+function cachedConfigFile(root: string): string | undefined {
+  const base = process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config");
+  const cachePath = join(base, "shopify-cli-app-nodejs", "config.json");
+  if (!existsSync(cachePath)) return undefined;
+  try {
+    const cache = JSON.parse(readFileSync(cachePath, "utf8")) as Record<string, { configFile?: string }>;
+    const entry = cache[root];
+    return typeof entry?.configFile === "string" ? entry.configFile : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function activeConfigFile(root: string, argv: string[]): string {
@@ -20,6 +34,9 @@ export function activeConfigFile(root: string, argv: string[]): string {
       return value.endsWith(".toml") ? value : `shopify.app.${value}.toml`;
     }
   }
+
+  const cached = cachedConfigFile(root);
+  if (cached !== undefined) return cached;
 
   const statePath = join(root, ".shopify", "project.json");
   if (existsSync(statePath)) {

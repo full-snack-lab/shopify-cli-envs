@@ -132,3 +132,22 @@ describe("guard", () => {
     expect(configClientId(root, "shopify.app.toml")).toBe("dev-id");
   });
 });
+
+describe("cached config detection", () => {
+  it("reads the CLI's per-directory config cache", () => {
+    const root = fixture({ "shopify.app.toml": 'client_id = "dev-id"\n' });
+    const xdg = mkdtempSync(join(tmpdir(), "xdg-"));
+    const dir = join(xdg, "shopify-cli-app-nodejs");
+    require("node:fs").mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "config.json"), JSON.stringify({ [root]: { configFile: "shopify.app.staging.toml" } }));
+    const previous = process.env.XDG_CONFIG_HOME;
+    process.env.XDG_CONFIG_HOME = xdg;
+    try {
+      expect(activeConfigFile(root, [])).toBe("shopify.app.staging.toml");
+      expect(activeConfigFile(root, ["--config", "dev"])).toBe("shopify.app.dev.toml");
+    } finally {
+      if (previous === undefined) delete process.env.XDG_CONFIG_HOME;
+      else process.env.XDG_CONFIG_HOME = previous;
+    }
+  });
+});
