@@ -1,0 +1,16 @@
+client_id = "ci-staging-id"
+name = "ci-fixture"
+application_url = "https://example.com"
+embedded = true
+
+[build]
+dev_store_url = "fixture.myshopify.com"
+
+[access_scopes]
+scopes = "read_products"
+
+[auth]
+redirect_urls = [ "https://example.com/auth/callback" ]
+
+[webhooks]
+api_version = "2026-07"

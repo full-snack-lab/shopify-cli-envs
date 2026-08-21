@@ -1,0 +1,53 @@
+{
+  "name": "@full-snack-lab/shopify-cli-envs",
+  "version": "1.0.0",
+  "description": "Shopify CLI plugin that manages app environments (dev/staging/production) from one committed manifest: config switching, Dokploy env push and deploy, drift detection, and a guard that stops `app dev` from touching protected environments.",
+  "keywords": [
+    "shopify",
+    "shopify-cli",
+    "oclif-plugin",
+    "environments",
+    "dokploy",
+    "deploy"
+  ],
+  "homepage": "https://github.com/full-snack-lab/shopify-cli-envs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/full-snack-lab/shopify-cli-envs.git"
+  },
+  "license": "MIT",
+  "author": "Full Snack Lab",
+  "type": "commonjs",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "prepack": "node build.mjs",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "oclif": {
+    "commands": "./dist/commands",
+    "topics": {
+      "envs": {
+        "description": "Manage app environments from the envs.toml manifest."
+      }
+    },
+    "hooks": {
+      "init": "./dist/hooks/init.js"
+    }
+  },
+  "dependencies": {
+    "@oclif/core": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "smol-toml": "^1.7.1",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

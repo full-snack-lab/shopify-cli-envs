@@ -1,0 +1,19 @@
+playground = "playground.myshopify.com"
+tiers = [".env.ci.local"]
+
+[environments.dev]
+config = "shopify.app.dev.toml"
+client_id = "ci-dev-id"
+
+[environments.staging]
+config = "shopify.app.toml"
+client_id = "ci-staging-id"
+protected = true
+
+[environments.staging.deploy]
+adapter = "dokploy"
+app_id = "@CI_APP_ID"
+
+[environments.staging.env]
+NODE_ENV = "production"
+SHOPIFY_API_KEY = "@CI_CLIENT_ID"
